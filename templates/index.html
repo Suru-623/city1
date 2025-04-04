@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Urban Development Planning Tool</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"/>
+    
+    <!-- Leaflet Draw CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <style>
+        #map {
+            height: 600px;
+            width: 100%;
+            border-radius: 4px;
+        }
+
+        .card {
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar {
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .entity-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 4px;
+            background: #f8f9fa;
+            border-left: 3px solid #007bff;
+        }
+
+        .entity-item .ai-detected {
+            color: #28a745;
+            font-size: 0.85em;
+            margin-top: 5px;
+        }
+
+        .badge-ai {
+            background-color: #28a745;
+            color: white;
+            font-size: 0.75em;
+            padding: 3px 6px;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+
+        .analysis-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .entity-marker-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .entity-marker-icon i {
+            color: #007bff;
+        }
+
+        .leaflet-draw-tooltip {
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 4px 8px;
+        }
+
+        .area-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+
+        .suggestion-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-left: 4px solid transparent;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .suggestion-item.priority-high {
+            border-left-color: #dc3545;
+        }
+
+        .suggestion-item.priority-medium {
+            border-left-color: #ffc107;
+        }
+
+        .suggestion-item.priority-low {
+            border-left-color: #28a745;
+        }
+
+        .implementation-steps {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .implementation-steps ul {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+
+        .category-section h6 {
+            color: #495057;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-content {
+            padding-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Urban Development Planner</a>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="search-container" style="position: absolute; top: 10px; right: 10px; z-index: 1000;">
+                            <input type="text" id="location-search" placeholder="Search location..." 
+                                   style="padding: 8px; width: 250px; border-radius: 4px; border: 1px solid #ccc;">
+                            <button onclick="searchLocation()" 
+                                    style="padding: 8px 15px; margin-left: 5px; border-radius: 4px; 
+                                           background-color: #4CAF50; color: white; border: none; cursor: pointer;">
+                                Search
+                            </button>
+                        </div>
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Detected Entities</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion" id="entityAccordion">
+                            <!-- Natural Features -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#naturalFeatures">
+                                        <i class="fas fa-mountain me-2"></i> Natural Features
+                                        <span class="badge bg-primary ms-2" id="naturalCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="naturalFeatures" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="naturalFeaturesList"></div>
+                                </div>
+                            </div>
+
+                            <!-- Water Bodies -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#waterBodies">
+                                        <i class="fas fa-water me-2"></i> Water Bodies
+                                        <span class="badge bg-primary ms-2" id="waterCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="waterBodies" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="waterBodiesList"></div>
+                                </div>
+                            </div>
+
+                            <!-- Green Spaces -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#greenSpaces">
+                                        <i class="fas fa-tree me-2"></i> Green Spaces
+                                        <span class="badge bg-primary ms-2" id="greenCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="greenSpaces" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="greenSpacesList"></div>
+                                </div>
+                            </div>
+
+                            <!-- Roads -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#roads">
+                                        <i class="fas fa-road me-2"></i> Roads
+                                        <span class="badge bg-primary ms-2" id="roadCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="roads" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="roadsList"></div>
+                                </div>
+                            </div>
+
+                            <!-- Buildings -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#buildings">
+                                        <i class="fas fa-building me-2"></i> Buildings
+                                        <span class="badge bg-primary ms-2" id="buildingCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="buildings" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="buildingsList"></div>
+                                </div>
+                            </div>
+
+                            <!-- Landmarks -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#landmarks">
+                                        <i class="fas fa-monument me-2"></i> Landmarks
+                                        <span class="badge bg-primary ms-2" id="landmarkCount">0</span>
+                                    </button>
+                                </h2>
+                                <div id="landmarks" class="accordion-collapse collapse" data-bs-parent="#entityAccordion">
+                                    <div class="accordion-body" id="landmarksList"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Analysis Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="analysisResults" class="analysis-section">
+                            Select an area to view analysis
+                        </div>
+                        <div id="aiDetectedTypes" class="analysis-section">
+                            <h6>AI-Detected Categories</h6>
+                            <div class="ai-types-content">
+                                Select an area to view AI-detected categories
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Development Suggestions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="developmentSuggestions" class="analysis-section">
+                            <div class="suggestion-categories">
+                                <!-- Infrastructure -->
+                                <div class="category-section mb-4">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="fas fa-road me-2"></i>
+                                        Infrastructure Improvements
+                                    </h6>
+                                    <div id="infrastructureSuggestions" class="suggestion-content">
+                                        Select an area to view suggestions
+                                    </div>
+                                </div>
+                                
+                                <!-- Environmental -->
+                                <div class="category-section mb-4">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="fas fa-leaf me-2"></i>
+                                        Environmental Enhancements
+                                    </h6>
+                                    <div id="environmentalSuggestions" class="suggestion-content">
+                                        Select an area to view suggestions
+                                    </div>
+                                </div>
+                                
+                                <!-- Community -->
+                                <div class="category-section mb-4">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="fas fa-users me-2"></i>
+                                        Community Development
+                                    </h6>
+                                    <div id="communitySuggestions" class="suggestion-content">
+                                        Select an area to view suggestions
+                                    </div>
+                                </div>
+
+                                <!-- Smart City -->
+                                <div class="category-section mb-4">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="fas fa-city me-2"></i>
+                                        Smart City Initiatives
+                                    </h6>
+                                    <div id="smartCitySuggestions" class="suggestion-content">
+                                        Select an area to view suggestions
+                                    </div>
+                                </div>
+
+                                <!-- Sustainability -->
+                                <div class="category-section mb-4">
+                                    <h6 class="d-flex align-items-center">
+                                        <i class="fas fa-seedling me-2"></i>
+                                        Sustainability Measures
+                                    </h6>
+                                    <div id="sustainabilitySuggestions" class="suggestion-content">
+                                        Select an area to view suggestions
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">3D Development Preview</h5>
+                        <button class="btn btn-sm btn-primary" onclick="toggle3DView()">
+                            <i class="fas fa-cube"></i> Toggle 3D
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="map3D" style="height: 400px; width: 100%; display: none;"></div>
+                        <div class="development-controls mt-3" style="display: none;" id="developmentControls">
+                            <h6>Add New Development:</h6>
+                            <div class="mb-2">
+                                <select class="form-select" id="developmentType">
+                                    <option value="">Select Type...</option>
+                                    <option value="building">Building</option>
+                                    <option value="park">Park</option>
+                                    <option value="road">Road</option>
+                                    <option value="facility">Public Facility</option>
+                                </select>
+                            </div>
+                            <div class="mb-2">
+                                <input type="text" class="form-control" id="developmentName" placeholder="Name">
+                            </div>
+                            <div class="mb-2">
+                                <textarea class="form-control" id="developmentDescription" placeholder="Description"></textarea>
+                            </div>
+                            <button class="btn btn-success" onclick="addNewDevelopment()">
+                                <i class="fas fa-plus"></i> Add to Map
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+
+    <script>
+    function searchLocation() {
+        const searchInput = document.getElementById('location-search').value;
+        
+        fetch('/search_location', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                query: searchInput
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Create a custom icon for the location marker
+                const customIcon = L.divIcon({
+                    html: data.icon_html,
+                    className: 'custom-div-icon',
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                });
+
+                // Remove existing search marker if it exists
+                if (window.searchMarker) {
+                    map.removeLayer(window.searchMarker);
+                }
+
+                // Add new marker
+                window.searchMarker = L.marker(
+                    [data.coordinates.lat, data.coordinates.lon],
+                    { icon: customIcon }
+                ).addTo(map);
+
+                // Fly to location with smooth animation
+                map.flyTo(
+                    [data.coordinates.lat, data.coordinates.lon],
+                    16,
+                    {
+                        duration: 2,  // Duration in seconds
+                        easeLinearity: 0.5
+                    }
+                );
+
+                // Add popup with address
+                window.searchMarker.bindPopup(data.address.formatted).openPopup();
+            } else {
+                alert('Location not found: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error searching for location');
+        });
+    }
+
+    // Add event listener for search input (optional)
+    document.getElementById('location-search').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchLocation();
+        }
+    });
+    </script>
+
+    <!-- Three.js for 3D visualization -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- OSM Buildings for 3D building visualization -->
+    <script src="https://cdn.osmbuildings.org/OSMBuildings-GL.js"></script>
+    <!-- Deck.gl for advanced 3D visualization -->
+    <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+
+    <!-- JavaScript Libraries -->
+    <!-- jQuery first -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    
+    <!-- Leaflet Draw Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    
+    <!-- OSM Buildings -->
+    <script src="https://cdn.osmbuildings.org/classic/0.2.2b/OSMBuildings-Leaflet.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html> 

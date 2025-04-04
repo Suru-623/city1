@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog - Urban Development Planning</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/"><i class="fas fa-city"></i> Urban Planner</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/"><i class="fas fa-home"></i> Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/about"><i class="fas fa-info-circle"></i> About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/blog"><i class="fas fa-blog"></i> Blog</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="/login" class="btn btn-outline-light me-2"><i class="fas fa-sign-in-alt"></i> Login</a>
+                    <a href="/register" class="btn btn-primary"><i class="fas fa-user-plus"></i> Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Blog Section -->
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Urban Planning Insights</h1>
+        
+        <!-- Featured Article -->
+        <div class="card mb-4">
+            <div class="row g-0">
+                <div class="col-md-4">
+                    <img src="{{ url_for('static', filename='images/decor idea.jpg') }}" class="img-fluid rounded-start" alt="Smart City">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <span class="badge bg-primary mb-2">Featured</span>
+                        <h2 class="card-title">The Future of Smart Cities: AI-Driven Urban Planning</h2>
+                        <p class="card-text">Explore how artificial intelligence is revolutionizing urban planning and development, creating more sustainable and livable cities for the future.</p>
+                        <p class="card-text"><small class="text-muted">Published 3 days ago</small></p>
+                        <a href="#" class="btn btn-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Blog Grid -->
+        <div class="row">
+            <!-- Article 1 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <img src="{{ url_for('static', filename='images/sustainable.jpg') }}" class="card-img-top" alt="Sustainable Development">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-2">Sustainability</span>
+                        <h5 class="card-title">Sustainable Urban Development Practices</h5>
+                        <p class="card-text">Learn about the latest sustainable urban development practices and how they're shaping modern cities.</p>
+                        <p class="card-text"><small class="text-muted">Published 1 week ago</small></p>
+                        <a href="#" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article 2 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <img src="{{ url_for('static', filename='images/tranportation 2.jpg') }}" class="card-img-top" alt="Transportation">
+                    <div class="card-body">
+                        <span class="badge bg-info mb-2">Infrastructure</span>
+                        <h5 class="card-title">Modern Transportation Planning</h5>
+                        <p class="card-text">Discover how cities are revolutionizing their transportation systems for better mobility and accessibility.</p>
+                        <p class="card-text"><small class="text-muted">Published 2 weeks ago</small></p>
+                        <a href="#" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article 3 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <img src="{{ url_for('static', filename='images/community.jpg') }}" class="card-img-top" alt="Community Planning">
+                    <div class="card-body">
+                        <span class="badge bg-warning mb-2">Community</span>
+                        <h5 class="card-title">Community-Centered Urban Design</h5>
+                        <p class="card-text">How involving communities in urban planning leads to more inclusive and vibrant neighborhoods.</p>
+                        <p class="card-text"><small class="text-muted">Published 3 weeks ago</small></p>
+                        <a href="#" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Article 4 -->
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <img src="{{ url_for('static', filename='images/green 2.jpg') }}" class="card-img-top" alt="Green Spaces">
+                    <div class="card-body">
+                        <span class="badge bg-success mb-2">Environment</span>
+                        <h5 class="card-title">Integrating Green Spaces in Urban Areas</h5>
+                        <p class="card-text">The importance of green spaces in urban planning and their impact on community well-being.</p>
+                        <p class="card-text"><small class="text-muted">Published 1 month ago</small></p>
+                        <a href="#" class="btn btn-outline-primary">Read More</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Newsletter Signup -->
+        <div class="card bg-light mt-4">
+            <div class="card-body text-center">
+                <h3>Stay Updated</h3>
+                <p>Subscribe to our newsletter for the latest urban planning insights and updates.</p>
+                <form class="row g-3 justify-content-center">
+                    <div class="col-auto">
+                        <input type="email" class="form-control" placeholder="Enter your email">
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Subscribe</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>Urban Planner</h5>
+                    <p>Transforming urban development with AI and interactive planning tools.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/about">About Us</a></li>
+                        <li><a href="/blog">Blog</a></li>
+                        <li><a href="/contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-2"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4">
+            <div class="text-center">
+                <p class="mb-0">&copy; 2024 Urban Planner. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 
